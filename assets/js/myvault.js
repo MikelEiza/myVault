@@ -1,14 +1,22 @@
 // global variables
 // TOOD: this should be made in better way :-)
-var VAULT_URL = "http://10.10.0.149:9200/v1/";
+var VAULT_URL = "http://127.0.0.1:8200/v1/";
 var DEFAULT_SECRET_PATH = "/secret/";
 var EFFECT_TIME= 200;
 var path_array = [];
 
 // end global variables
 
+function save_options(){
+    if ($("#vault-url-input").val() != ""){
+        VAULT_URL = $("#vault-url-input").val();
+        localStorage.setItem("ironvault-url", VAULT_URL);
+        $("#options-modal").modal("hide");
+    }
+}
+
 function login(method){
-    var url = VAULT_URL;
+    var url = localStorage.getItem("ironvault-url") || VAULT_URL;
     var data = "";
     var header = "";
     var type = "";
@@ -83,6 +91,7 @@ function is_logged(){
             $("ul li a#is_logged").html("Logout");
             $("ul li a#is_logged").attr("href", "/login.html?logout");
 
+            VAULT_URL = localStorage.getItem("ironvault-url");
             var path = get_path();
             if (path.length > 0) {
                 if (path.substring(path.length-1) == "/"){
@@ -357,10 +366,16 @@ function browse_secrets(path){
 }
 
 $(document).ready(function(){
+    // login.html
     $("#login").click(function(){
         login();
     });
 
+    $("#save_options").click(function(){
+        save_options();
+    });
+
+    // index.html
     $("#create_secret_btn").click(function(){
         set_secret("created","",true);
     });

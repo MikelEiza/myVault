@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="assets/css/bootstrap.min.css">
     <script src="assets/js/bootstrap.min.js"></script>
 
+    <link rel="stylesheet" href="deps/editor.md/css/editormd.min.css">
 
     <script src="assets/js/myvault.js"></script>
     <link rel="stylesheet" href="assets/css/myvault.css">
@@ -22,7 +23,7 @@
 
     <nav class="navbar navbar-expand-md navbar-dark bg-dark">
       <a class="navbar-brand" href="/">My Vault
-          <i id="lock-icon" class="fa fa-unlock-alt fa" aria-hidden="true"></i>
+          <i id="lock-icon" class="fa fa-lock" aria-hidden="true"></i>
       </a>
       <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
@@ -33,6 +34,11 @@
         </ul>
 
         <ul class="navbar-nav  my-2 my-lg-0">
+          <li class="nav-item active">
+            <a class="navbar-brand" href="#">
+              <i id="lock-icon" class="fa fa-cog" aria-hidden="true" data-toggle="modal" data-target="#options-modal"></i>
+            </a>
+          </li>
           <li class="nav-item active">
             <a id="is_logged" class="nav-link" href="/login.html">Login</a>
           </li>
@@ -70,6 +76,7 @@
                           <label for="inputPassword" class="sr-only">Password</label>
                           <input type="password" id="password" class="form-control" placeholder="Password" required>
                         </div>
+
                         <button id="login" class="btn btn-lg btn-primary btn-block">Log in</button>
                     </form>
                 </div>
@@ -86,15 +93,6 @@
 
           </div>
 
-
-
-
-
-
-
-
-
-
         </div>
       </div> <!-- .row -->
     </div> <!-- #principal -->
@@ -104,7 +102,34 @@
           Made by Yuki</a>
     </nav>
 
+
+    <!-- Modal -->
+    <div class="modal fade" id="options-modal" tabindex="-1" role="dialog" aria-labelledby="options-modal" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Options</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+              <div class="form-group">
+                <label for="input-vault-url">Vault server URL</label>
+                <input type="input" id="vault-url-input" class="form-control" placeholder="https://myvault.com:8200/v1/">
+              </div>
+          </div>
+          <div class="modal-footer">
+            <button id="save_options" type="button" class="btn btn-primary">Save changes</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- END Modal -->
+
+
     <script type="text/javascript">
+        $("#vault-url-input").val(localStorage.getItem("ironvault-url"));
         is_logged();
         print_errors();
     </script>
