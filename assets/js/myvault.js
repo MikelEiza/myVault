@@ -7,21 +7,41 @@ var path_array = [];
 
 // end global variables
 
-function login(){
-    var username = document.getElementById("username").value;
-    var pass = document.getElementById("inputPassword").value;
+function login(method){
+    var url = VAULT_URL;
+    var data = "";
+    var header = "";
+    var type = "";
+    if (method == "ldap"){
+        type = "POST";
+        var username = document.getElementById("username").value;
+        url = url+"auth/ldap/login/"+username
+        var pass = document.getElementById("password").value;
+        data = {password:pass};
+    } else if (method == "token") {
+        type = "GET";
+        var token = document.getElementById("token").value;
+        url = url+"auth/token/lookup-self";
+        header = {"X-Vault-Token": token};
+        data = {"token": "ClientToken"};
+    }
 
-    var password = {password:pass};
     $.ajax({
-        type: "POST",
-        data :JSON.stringify(password),
-        url: VAULT_URL+"auth/ldap/login/"+username,
+        type: type,
+        data :JSON.stringify(data),
+        url: url,
+        headers: header,
         contentType: "application/json",
         dataType: "json",
     }).done(function(res) {
+        if (method == "ldap"){
+            localStorage.setItem("ironvault-token", res.auth.client_token);
+        } else if (method == "token"){
+            localStorage.setItem("ironvault-token", res.data.id);
+        }
         window.location.href = "/";
-        localStorage.setItem("ironvault-token", res.auth.client_token);
-    }).fail(function(jqXHR, textStatus, errorThrown){
+    }).fail(function(res, textStatus, errorThrown){
+        // FIXME: chrome sends OPTIONS before POST, seems because of CORS
         $('#log_error').html(textStatus+" "+errorThrown);
         $('#log_error').slideDown().delay(1500).slideUp();
     });

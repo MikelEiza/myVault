@@ -43,22 +43,58 @@
     <div id="principal" class="container">
       <div class="row justify-content-center">
 
-        <div class="">
+        <div class="col-md-3">
           <h2 class="form-signin-heading text-center">Log in</h2>
 
           <div id="log_error" class="alert alert-danger" role="alert" style="display:none"></div>
 
-          <form id="login_form" action="javascript:login();" autocomplete="off">
-              <div class="form-group">
-                <label for="username" class="sr-only">username</label>
-                <input type="input" id="username" class="form-control" placeholder="Username" required autofocus>
-              </div>
-              <div class="form-group">
-                <label for="inputPassword" class="sr-only">Password</label>
-                <input type="password" id="inputPassword" class="form-control" placeholder="Password" required>
-              </div>
-              <button id="login" class="btn btn-lg btn-primary btn-block">Log in</button>
-          </form>
+
+
+          <ul class="nav nav-tabs justify-content-center" id="loginTab" role="tablist">
+            <li class="nav-item">
+              <a class="nav-link active" id="ldap-tab" data-toggle="tab" href="#ldap-tab-content" role="tab" aria-controls="ldap" aria-expanded="true">LDAP</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" id="token-tab" data-toggle="tab" href="#token-tab-content" role="tab" aria-controls="token">Token</a>
+            </li>
+          </ul>
+          <div class="tab-content" id="login-tab-content">
+
+                <div class="tab-pane fade show active" id="ldap-tab-content" role="tabpanel" aria-labelledby="ldap-tab">
+                    <form id="login_form" action='javascript:login("ldap");' autocomplete="off">
+                        <div class="form-group">
+                          <label for="username" class="sr-only">username</label>
+                          <input type="input" id="username" class="form-control" placeholder="Username" required autofocus>
+                        </div>
+                        <div class="form-group">
+                          <label for="inputPassword" class="sr-only">Password</label>
+                          <input type="password" id="password" class="form-control" placeholder="Password" required>
+                        </div>
+                        <button id="login" class="btn btn-lg btn-primary btn-block">Log in</button>
+                    </form>
+                </div>
+
+                <div class="tab-pane fade" id="token-tab-content" role="tabpanel" aria-labelledby="token-tab">
+                    <form id="login_form" action='javascript:login("token");' autocomplete="off">
+                        <div class="form-group">
+                          <label for="token" class="sr-only">token</label>
+                          <input type="input" id="token" class="form-control" placeholder="token" required autofocus>
+                        </div>
+                        <button id="login" class="btn btn-lg btn-primary btn-block">Log in</button>
+                    </form>
+                </div>
+
+          </div>
+
+
+
+
+
+
+
+
+
+
         </div>
       </div> <!-- .row -->
     </div> <!-- #principal -->
