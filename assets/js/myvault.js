@@ -76,6 +76,30 @@ function is_logged(){
             }
         }
     }
+    var data = get_tree(DEFAULT_SECRET_PATH);
+
+    $(document).ready(function($) {
+        setTimeout(function() {
+            $('#tree').delay(1000).treeview({
+               data:data,
+               levels:1,
+               color: "#2e2d30",
+               selectedBackColor: "#b0232a",
+               enableLinks:true,
+               expandIcon: "fa fa-plus",
+               collapseIcon: "fa fa-minus",
+            //    onNodeSelected: function(event, node) {
+            //        window.location.href = "/?path="+path+node.text;
+            //       }
+            });
+        }, 400);
+    });
+
+
+
+
+
+
 }
 
 function print_errors(){
@@ -84,6 +108,38 @@ function print_errors(){
         $("#log_error").slideDown();
     }
     $('#log_error').html(errors);
+}
+
+function get_tree(path){
+    var token = get_token();
+    var items = []
+    $.ajax({
+        type: "LIST",
+        async: true,
+        crossDomain: true,
+        headers: {"X-Vault-Token": token},
+        url: VAULT_URL+path.substring(1),
+        contentType: "application/json",
+        dataType: "json",
+        statusCode: {
+            200: function (response, textStatus, errorThrown) {
+            },
+         },
+    }).always(function(response){
+        $.each(response.data.keys.sort(),function(index,value){
+            item = {};
+            item["text"] = value;
+            item["href"] = "/?path="+path+value;
+
+            if (value.substring(value.length-1) == "/"){
+                item["nodes"] = [];
+                var sub_items = get_tree(path+value);
+                item["nodes"] = sub_items;
+            }
+            items.push(item);
+        })
+    });
+    return items
 }
 
 function set_tree(path,data) {
@@ -318,12 +374,14 @@ function browse_secrets(path){
     $.ajax({
         type: "LIST",
         headers: {"X-Vault-Token": token},
+        timeout: 1000,
         url: VAULT_URL+path.substring(1),
         contentType: "application/json",
         dataType: "json",
         statusCode: {
             200: function (response, textStatus, errorThrown) {
-                set_tree(path,response.data.keys);
+                // set_tree(path,response.data.keys);
+                // get_tree(DEFAULT_SECRET_PATH);
                 update_breadcrumb();
             },
             403: function (response, textStatus, errorThrown){
@@ -333,6 +391,10 @@ function browse_secrets(path){
                 $('#log_error').html("Path not found").slideDown().delay(2500).slideUp();
             }
          },
+    }).always( function(response,textStatus,errorThrown) {
+        if (textStatus == "timeout"){
+            logout("timeout");
+        }
     });
 }
 
