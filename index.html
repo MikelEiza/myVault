@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <script src="assets/js/jquery-3.2.1.min.js"></script>
+    <script src="assets/js/popper.min.js"></script>
+
+    <link rel="stylesheet" href="assets/css/bootstrap.min.css">
+    <script src="assets/js/bootstrap.min.js"></script>
+
+    <script src="assets/js/bootstrap-treeview.js"></script>
+    <link rel="stylesheet" href="assets/css/bootstrap-treeview.css">
+
+    <script src="deps/editor.md/editormd.min.js"></script>
+    <script src="deps/editor.md/lib/marked.min.js"></script>
+    <script src="deps/editor.md/lib/prettify.min.js"></script>
+    <script src="deps/editor.md/lib/raphael.min.js"></script>
+    <script src="deps/editor.md/lib/underscore.min.js"></script>
+    <script src="deps/editor.md/lib/sequence-diagram.min.js"></script>
+    <script src="deps/editor.md/lib/flowchart.min.js"></script>
+    <script src="deps/editor.md/lib/jquery.flowchart.min.js"></script>
+
+
+    <script src="deps/editor.md/languages/en.js"></script>
+    <link rel="stylesheet" href="deps/editor.md/css/editormd.min.css">
+
+    <script src="assets/js/myvault.js"></script>
+    <link rel="stylesheet" href="assets/css/myvault.css">
+
+    <title>My Vault</title>
+  </head>
+
+  <body>
+
+    <nav class="navbar navbar-expand-md navbar-dark bg-dark">
+      <a class="navbar-brand" href="/">My Vault
+          <i id="lock-icon" class="fa fa-unlock-alt fa" aria-hidden="true"></i>
+      </a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault" aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navbarsExampleDefault">
+        <ul class="navbar-nav mr-auto">
+        </ul>
+
+        <ul class="navbar-nav  my-2 my-lg-0">
+          <li class="nav-item active">
+            <a id="is_logged" class="nav-link" href="/login.html">Login</a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <div id="principal" class="container-fluid">
+      <div class="row">
+        <div id="secrets" class="col-md-2">
+          <div id="tree"></div>
+        </div>
+
+        <main class="col-md-10 col-md-auto" role="main">
+          <ol id="secret_path" class="breadcrumb">
+              <li class="breadcrumb-item"><a href="/">secret</a></li>
+          </ol>
+
+          <div id="log_error" class="alert alert-danger" role="alert" style="display:none"></div>
+          <div id="log_success" class="alert alert-success" role="alert" style="display:none"></div>
+
+          <div id="create_secret" class="col-md-8" style="display:none;">
+              <div class="input-group">
+                <span  id="create_secret_path" class="input-group-addon">/path/</span>
+                <input id="new_secret_name" class="form-control" type="text"  placeholder="secret_name">
+                <span class="input-group-btn">
+                  <button id="create_secret_btn" class="btn btn-success" type="button">Create!</button>
+                </span>
+              </div>
+          </div>
+
+          <div id="editors" style="display:none">
+              <div id="functions_buttons" class="float-right">
+                  <button id="print_secret_btn" type="button" class="btn btn-primary fa fa-print"></button>
+                  <button id="edit_secret_btn"  type="button" class="btn btn-success fa fa-edit"></button>
+              </div>
+
+              <div class="tab-content" id="editors-tab-content">
+                  <div id="editormd" class="tab-pane fade show active" role="tabpanel" aria-labelledby="editormd-tab">
+                      <textarea  style="display:none;"></textarea>
+                  </div>
+              </div>
+          </div>
+
+        </main>
+
+      </div> <!-- .row -->
+    </div> <!-- #principal -->
+
+    <nav id="footer" class="navbar fixed-bottom navbar-expand navbar-dark  bg-dark ">
+      <a class="navbar-brand" href="http://github.com/yuki">
+          Made by Yuki</a>
+    </nav>
+
+    <script type="text/javascript">
+        is_logged();
+    </script>
+
+  </body>
+</html>

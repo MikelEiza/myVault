@@ -1,0 +1,109 @@
+/*
+ * few colors from:
+ * https://bootswatch.com/darkly/
+ */
+.btn-primary {
+  color: #ffffff;
+  background-color: #464545;
+  border-color: #464545;
+}
+
+.btn-primary:focus,
+.btn-primary.focus {
+  color: #ffffff;
+  background-color: #2c2c2c;
+  border-color: #060606;
+}
+.btn-primary:hover {
+  color: #ffffff;
+  background-color: #2c2c2c;
+  border-color: #272727;
+}
+
+.btn-danger{
+    color: #FFF;
+    background-color: #b0232a;
+    border-color: #b0232a;
+}
+
+.alert-danger {
+  background-color: #b0232a;
+  border-color: #b0232a;
+  color: #ffffff;
+}
+.alert-danger hr {
+  border-top-color: #b0232a;
+}
+.alert-danger .alert-link {
+  color: #e6e6e6;
+}
+
+nav.bg-dark {
+    background-color: #2e2d30!important;
+}
+a.navbar-dark a.navbar-dark {
+    color: #b0232a!important;
+}
+
+ol li a {
+    color: #b0232a!important;
+}
+
+div.jsoneditor{
+    border-color: #b0232a!important;
+}
+div.jsoneditor-menu{
+    background-color: #b0232a!important;
+    border-color: #b0232a!important;
+}
+
+#editors {
+    padding-bottom: 50px;
+}
+
+#editors-tab-content {
+    padding-top: 15px;
+}
+
+#editor{
+    padding-bottom: 100px;
+}
+
+#editormd {
+    border-radius: .25rem;
+}
+.editormd-fullscreen {
+    z-index:2000;
+}
+
+#update_secret, #create_secret {
+    padding-bottom: 15px;
+}
+
+#principal {
+    padding-top: 15px;
+}
+
+ol.breadcrumb {
+    background-color: #2e2d30;
+}
+.breadcrumb a {
+    color: #fff!important;
+}
+
+#lock-icon {
+    font-size:4em!important;
+}
+
+nav#footer {
+    height: 30px;
+}
+
+a.nav-link , #footer a .fa-heart {
+    color: #b0232a;
+}
+
+.editormd-html-preview {
+    width: 90%;
+    margin: 0 auto;
+}
