@@ -49,6 +49,11 @@
 
         <ul class="navbar-nav  my-2 my-lg-0">
           <li class="nav-item active">
+            <a class="navbar-brand" href="#">
+              <i id="lock-icon" class="fa fa-cog" aria-hidden="true" data-toggle="modal" data-target="#options-modal"></i>
+            </a>
+          </li>
+          <li class="nav-item active">
             <a id="is_logged" class="nav-link" href="/login.html">Login</a>
           </li>
         </ul>
@@ -100,7 +105,10 @@
           Made by Yuki</a>
     </nav>
 
+    <div id="modal"></div>
+
     <script type="text/javascript">
+        $("#modal").load("modal.html");
         is_logged();
     </script>
 

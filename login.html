@@ -102,44 +102,10 @@
           Made by Yuki</a>
     </nav>
 
-
-    <!-- Modal -->
-    <div class="modal fade" id="options-modal" tabindex="-1" role="dialog" aria-labelledby="options-modal" aria-hidden="true">
-      <div class="modal-dialog" role="document">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="exampleModalLabel">Options</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-              <span aria-hidden="true">&times;</span>
-            </button>
-          </div>
-          <div class="modal-body">
-              <div class="form-group">
-                <label for="input_vault_url">Vault server URL</label>
-                <input type="input" id="input_vault_url" class="form-control" placeholder="https://myvault.com:8200/v1/">
-              </div>
-
-              <div class="form-group">
-                <label for="input_logout_timer">Automatic logout after</label>
-                <select id="input_logout_timer" class="form-control">
-                  <option value="15">15 minutes</option>
-                  <option value="30">30 minutes</option>
-                  <option value="45">45 minutes</option>
-                  <option value="60">60 minutes</option>
-                </select>
-              </div>
-          </div>
-          <div class="modal-footer">
-            <button id="save_options" type="button" class="btn btn-primary">Save changes</button>
-          </div>
-        </div>
-      </div>
-    </div>
-    <!-- END Modal -->
-
+    <div id="modal"></div>
 
     <script type="text/javascript">
-        $("#vault-url-input").val(localStorage.getItem("ironvault-url"));
+        $("#modal").load("modal.html");
         is_logged();
         print_errors();
     </script>
