@@ -123,31 +123,39 @@ function is_logged(){
                 browse_secrets(DEFAULT_SECRET_PATH);
             }
         }
+        var data = get_tree(DEFAULT_SECRET_PATH);
+
+        $(document).ready(function($) {
+            setTimeout(function() {
+                var keys_tree = $("#tree").delay(1000).treeview({
+                   data:data,
+                   levels:1,
+                   color: "#2e2d30",
+                   selectedBackColor: "#b0232a",
+                   enableLinks:true,
+                   expandIcon: "fa fa-plus",
+                   collapseIcon: "fa fa-minus",
+                   onNodeSelected: function(event, node) {
+                       var node = $('#tree').treeview("getSelected")[0];
+                       window.location.href = node.href;
+                       $('#tree').treeview('expandNode', node.nodeId);
+                      }
+                });
+
+                // search tree
+                var findExpandibleNodess = function() {
+                    return keys_tree.treeview('search', [ $('#input_search_tree').val(), { ignoreCase: true, exactMatch: false } ]);
+                };
+                var expandibleNodes = findExpandibleNodess();
+                // Expand/collapse/toggle nodes
+                $('#input_search_tree').on('keyup', function (e) {
+                    expandibleNodes = findExpandibleNodess();
+                    $('.expand-node').prop('disabled', !(expandibleNodes.length >= 1));
+                });
+            }, 1000);
+        });
+
     }
-    var data = get_tree(DEFAULT_SECRET_PATH);
-
-    $(document).ready(function($) {
-        setTimeout(function() {
-            $('#tree').delay(1000).treeview({
-               data:data,
-               levels:1,
-               color: "#2e2d30",
-               selectedBackColor: "#b0232a",
-               enableLinks:true,
-               expandIcon: "fa fa-plus",
-               collapseIcon: "fa fa-minus",
-            //    onNodeSelected: function(event, node) {
-            //        window.location.href = "/?path="+path+node.text;
-            //       }
-            });
-        }, 400);
-    });
-
-
-
-
-
-
 }
 
 function print_errors(){
@@ -177,7 +185,7 @@ function get_tree(path){
         $.each(response.data.keys.sort(),function(index,value){
             item = {};
             item["text"] = value;
-            item["href"] = "/?path="+path+value;
+            item["href"] = "#!"+path+value;
 
             if (value.substring(value.length-1) == "/"){
                 item["nodes"] = [];
@@ -188,42 +196,6 @@ function get_tree(path){
         })
     });
     return items
-}
-
-function set_tree(path,data) {
-    var tree = [];
-
-    if (data == ""){
-        // we are in a secret
-        var item = {};
-        var path_array = path.split("/");
-        item["text"] = path_array[path_array.length-1];
-        item["href"] = "#!"+path;
-        item["state"] = {selected:true}
-        tree.push(item);
-    } else {
-        $.each(data.sort(),function(index,value){
-            item = {};
-            if (value.substring(value.length-1) == "/"){
-                item["icon"] = "fa fa-plus ";
-                item["selectedIcon"] = "fa fa-minus";
-            }
-            item["text"] = value;
-            item["href"] = "#!"+path+value;
-            tree.push(item);
-        });
-    }
-
-    $('#tree').treeview({
-       data:tree,
-       levels:5,
-       color: "#2e2d30",
-       selectedBackColor: "#b0232a",
-       enableLinks:true,
-       onNodeSelected: function(event, node) {
-           window.location.href = "#!"+path+node.text;
-          }
-    });
 }
 
 function update_breadcrumb() {
@@ -452,8 +424,6 @@ function browse_secrets(path){
         timeout: 5000,
         statusCode: {
             200: function (response, textStatus, errorThrown) {
-                // set_tree(path,response.data.keys);
-                // get_tree(DEFAULT_SECRET_PATH);
                 update_breadcrumb();
             },
             403: function (response, textStatus, errorThrown){

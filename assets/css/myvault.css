@@ -75,12 +75,15 @@ ol li a {
     padding-bottom: 15px;
 }
 
-
 ol.breadcrumb {
     background-color: #2e2d30;
 }
 .breadcrumb a {
     color: #fff!important;
+}
+
+#tree_search {
+    padding-bottom: 15px;
 }
 
 nav#footer {
