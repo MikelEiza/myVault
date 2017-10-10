@@ -49,28 +49,23 @@ ol li a {
     color: #b0232a!important;
 }
 
-div.jsoneditor{
-    border-color: #b0232a!important;
+/* end colors */
+
+#login-tab-content {
+    padding-top: 15px;
 }
-div.jsoneditor-menu{
-    background-color: #b0232a!important;
-    border-color: #b0232a!important;
+
+#principal {
+    padding-top: 15px;
 }
 
 #editors {
     padding-bottom: 50px;
 }
 
-#login-tab-content {
-    padding-top: 15px;
-}
-
-#editor{
-    padding-bottom: 100px;
-}
-
 #editormd {
     border-radius: .25rem;
+    min-height: 500px;
 }
 .editormd-fullscreen {
     z-index:2000;
@@ -80,9 +75,6 @@ div.jsoneditor-menu{
     padding-bottom: 15px;
 }
 
-#principal {
-    padding-top: 15px;
-}
 
 ol.breadcrumb {
     background-color: #2e2d30;
@@ -91,19 +83,10 @@ ol.breadcrumb {
     color: #fff!important;
 }
 
-#lock-icon {
-    font-size:4em!important;
-}
-
 nav#footer {
     height: 30px;
 }
 
 a.nav-link , #footer a .fa-heart {
     color: #b0232a;
-}
-
-.editormd-html-preview {
-    width: 90%;
-    margin: 0 auto;
 }

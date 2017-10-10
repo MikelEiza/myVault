@@ -61,12 +61,11 @@ function get_token(){
 }
 
 function get_path(){
-    var params = window.location.search.substring(1).split("=");
-    if (params[0] == "path"){
-        return params[1];
-    } else {
-        return ""
+    var hash = window.location.hash.substring(2);
+    if (hash.length == 0){
+        hash =  DEFAULT_SECRET_PATH;
     }
+    return hash;
 }
 
 function logout(error){
@@ -91,14 +90,14 @@ function is_logged(){
             $("ul li a#is_logged").html("Logout");
             $("ul li a#is_logged").attr("href", "/login.html?logout");
 
-            VAULT_URL = localStorage.getItem("ironvault-url");
+            VAULT_URL = localStorage.getItem("ironvault-url") || VAULT_URL;
             var path = get_path();
             if (path.length > 0) {
                 if (path.substring(path.length-1) == "/"){
                     // we're in a directory
                     browse_secrets(path);
-                } else {editormd
-                    get_secret(path);
+                } else {
+                    get_secret();
                 }
             } else {
                 browse_secrets(DEFAULT_SECRET_PATH);
@@ -123,7 +122,7 @@ function set_tree(path,data) {
         var item = {};
         var path_array = path.split("/");
         item["text"] = path_array[path_array.length-1];
-        item["href"] = "/?path="+path;
+        item["href"] = "#!"+path;
         item["state"] = {selected:true}
         tree.push(item);
     } else {
@@ -134,7 +133,7 @@ function set_tree(path,data) {
                 item["selectedIcon"] = "fa fa-minus";
             }
             item["text"] = value;
-            item["href"] = "/?path="+path+value;
+            item["href"] = "#!"+path+value;
             tree.push(item);
         });
     }
@@ -146,7 +145,7 @@ function set_tree(path,data) {
        selectedBackColor: "#b0232a",
        enableLinks:true,
        onNodeSelected: function(event, node) {
-           window.location.href = "/?path="+path+node.text;
+           window.location.href = "#!"+path+node.text;
           }
     });
 }
@@ -159,7 +158,7 @@ function update_breadcrumb() {
         var params= path.split("&")
         path = params[0];
     }
-    var complete_path="/?path=";
+    var complete_path="#!";
     $("#secret_path").empty();
     var i = 0;
     var total = path.split("/").length-1;
@@ -221,7 +220,7 @@ function set_secret(action,data,create){
             204: function (response, textStatus, errorThrown) {
                 $("#log_success").html("Secret has been "+action).slideDown().delay(1500).slideUp();
                 if (create){
-                    window.location.href = "/?path="+path+"&edit=1";
+                    window.location.href = "#!"+path+"&edit=1";
                 }
             },
             400: function (response, textStatus, errorThrown) {
@@ -240,6 +239,7 @@ function get_secret(){
     var token = get_token();
     var path = get_path();
     var edit = false;
+    $("#create_secret").hide();
     if (path.indexOf("&")>0){
         var params= path.split("&")
         path = params[0];
@@ -251,12 +251,15 @@ function get_secret(){
         // we're in a directory
         browse_secrets(path);
     } else if (path.length > 0) {
+        $("#editormd").empty().removeAttr('class').css('height', 'auto');
+        $("#editormd").append('<textarea style="display:none">');
         $.ajax({
             type: "GET",
             headers: {"X-Vault-Token": token},
             url: VAULT_URL+path.substring(1),
             contentType: "application/json",
             dataType: "json",
+            timeout: 5000,
             statusCode: {
                 200: function (response, textStatus, errorThrown) {
                     $("#editors").slideDown(EFFECT_TIME);
@@ -267,13 +270,13 @@ function get_secret(){
                     var editormarkdown = "";
                     if (edit) {
                         var editormarkdown = "";
-                        $("#functions_buttons").empty(); // hide/empty buttons
+                        $("#functions_buttons").hide();
 
                         editormarkdown = editormd({
                             id                 : "editormd",
                             width              : "100%",
                             path               : "deps/editor.md/lib/",
-                            height             : 800,
+                            // height             : 800,
                             mode               : "gfm", // https://codemirror.net/mode/gfm/
                             tocm               :true,
                             codeFold           : true,
@@ -307,13 +310,23 @@ function get_secret(){
                                 $("#editor_update_secret_btn").click(function(){
                                     set_secret("updated",editormarkdown.getMarkdown(),false);
                                 });
+
+                                $('.markdown-toc a').click(function(e) {
+                                    e.preventDefault();
+                                    var hash = this.hash;
+                                    var offset = $('#editormd').outerHeight();
+                                    var target = $("a[name='"+hash.substring(1)+"'].reference-link").offset().top ;
+                                    $('html, body, markdown-body').stop(true, true).animate({ scrollTop: target}, 500, function () {});
+                                    return false;
+                                });
                             },
 
                         });
                     } else {
+                        $("#functions_buttons").show();
                         // just show the secret
                         editormarkdown = editormd.markdownToHTML("editormd", {
-                            height             : 800,
+                            // height             : 800,
                             mode               : "gfm", // https://codemirror.net/mode/gfm/
                             tocm               : true,
                             tocTitle           : "TOCM",
@@ -323,6 +336,14 @@ function get_secret(){
                             tex                : true,
                             flowChart          : true,
                             sequenceDiagram    : true,
+                        });
+                        $('div.markdown-toc a').click(function(e) {
+                            e.preventDefault();
+                            var hash = this.hash;
+                            var offset = $('#editormd').outerHeight();
+                            var target = $("a[name='"+hash.substring(1)+"'].reference-link").offset().top ;
+                            $('html, body').stop(true, true).animate({ scrollTop: target}, 500, function () {});
+                            return false;
                         });
                     }
 
@@ -344,12 +365,14 @@ function browse_secrets(path){
     var path_array = [];
     $("#editors").slideUp(EFFECT_TIME);
     $("#create_secret").show();
+    $("#editormd").empty();
     $.ajax({
         type: "LIST",
         headers: {"X-Vault-Token": token},
         url: VAULT_URL+path.substring(1),
         contentType: "application/json",
         dataType: "json",
+        timeout: 5000,
         statusCode: {
             200: function (response, textStatus, errorThrown) {
                 set_tree(path,response.data.keys);
@@ -362,7 +385,14 @@ function browse_secrets(path){
                 $('#log_error').html("Path not found").slideDown().delay(2500).slideUp();
             }
          },
+    }).fail(function(res, textStatus, errorThrown){
+        // window.location.href = "/login.html#"+errorThrown;
     });
+}
+
+function hash_changed(){
+    var hash = location.hash.replace( /^#/, '' );
+    get_secret(hash);
 }
 
 $(document).ready(function(){
@@ -382,11 +412,13 @@ $(document).ready(function(){
 
     $("#edit_secret_btn").click(function(){
         var path = get_path();
-        window.location.href = "/?path="+path+"&edit=1";
+        window.location.href = "#!"+path+"&edit=1";
     });
 
     $("#print_secret_btn").click(function(){
         print_secret($("#editormd").html());
     });
+
+    window.addEventListener("hashchange", hash_changed, false);
 
 });
