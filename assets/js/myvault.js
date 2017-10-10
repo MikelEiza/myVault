@@ -3,25 +3,28 @@
 var VAULT_URL = "http://127.0.0.1:8200/v1/";
 var DEFAULT_SECRET_PATH = "/secret/";
 var EFFECT_TIME= 200;
+var DEFAULT_TIMER = 15*60*1000; //minutes*secs*milliseconds
 var path_array = [];
 
+var TIMER = setInterval(automatic_logout, DEFAULT_TIMER);
 // end global variables
 
 function save_options(){
-    if ($("#vault-url-input").val() != ""){
-        VAULT_URL = $("#vault-url-input").val();
-        localStorage.setItem("ironvault-url", VAULT_URL);
-        $("#options-modal").modal("hide");
+    if ($("#input_vault_url").val() != ""){
+        VAULT_URL = $("#input_vault_url").val();
+        localStorage.setItem("ironvault_url", VAULT_URL);
+
     }
+    localStorage.setItem("ironvault_logout_timer",$("#input_logout_timer").val()*60*1000);
+    $("#options-modal").modal("hide");
 }
 
 function login(method){
-    var url = localStorage.getItem("ironvault-url") || VAULT_URL;
+    var url = localStorage.getItem("ironvault_url") || VAULT_URL;
     var data = "";
     var header = "";
-    var type = "";
+    var type = "POST";
     if (method == "ldap"){
-        type = "POST";
         var username = document.getElementById("username").value;
         url = url+"auth/ldap/login/"+username
         var pass = document.getElementById("password").value;
@@ -41,23 +44,30 @@ function login(method){
         headers: header,
         contentType: "application/json",
         dataType: "json",
+        statusCode: {
+            400: function (response, textStatus, errorThrown) {
+                $("#log_error").html(response.responseJSON.errors);
+                $("#log_error").slideDown().delay(3500).slideUp();
+            }
+        },
     }).done(function(res) {
         if (method == "ldap"){
-            localStorage.setItem("ironvault-token", res.auth.client_token);
+            localStorage.setItem("ironvault_token", res.auth.client_token);
         } else if (method == "token"){
-            localStorage.setItem("ironvault-token", res.data.id);
+            localStorage.setItem("ironvault_token", res.data.id);
         }
         window.location.href = "/";
     }).fail(function(res, textStatus, errorThrown){
-        // FIXME: chrome sends OPTIONS before POST, seems because of CORS
-        $('#log_error').html(textStatus+" "+errorThrown);
-        $('#log_error').slideDown().delay(1500).slideUp();
+        if (res.readyState == 0){
+            logout("There's a network error");
+            $('#log_error').slideDown().delay(1500).slideUp();
+        }
     });
 
 }
 
 function get_token(){
-    return localStorage.getItem("ironvault-token");
+    return localStorage.getItem("ironvault_token");
 }
 
 function get_path(){
@@ -69,14 +79,23 @@ function get_path(){
 }
 
 function logout(error){
-    localStorage.removeItem('ironvault-token');
+    localStorage.removeItem('ironvault_token');
     window.location.href = "/login.html#"+error;
+}
+
+function automatic_logout(){
+    logout("Automatic logout");
+}
+
+function reset_timer(){
+    window.clearInterval(TIMER)
+    TIMER = setInterval(automatic_logout, localStorage.getItem("ironvault_logout_timer") || DEFAULT_TIMER);
 }
 
 function is_logged(){
     if(window.location.search.substring(1) == "logout"){
         // we force logout if there's in the URL
-        localStorage.removeItem("ironvault-token");
+        localStorage.removeItem("ironvault_token");
     }
     var token = get_token();
     if (!token){
@@ -90,8 +109,9 @@ function is_logged(){
             $("ul li a#is_logged").html("Logout");
             $("ul li a#is_logged").attr("href", "/login.html?logout");
 
-            VAULT_URL = localStorage.getItem("ironvault-url") || VAULT_URL;
+            VAULT_URL = localStorage.getItem("ironvault_url") || VAULT_URL;
             var path = get_path();
+            reset_timer();
             if (path.length > 0) {
                 if (path.substring(path.length-1) == "/"){
                     // we're in a directory
@@ -386,13 +406,16 @@ function browse_secrets(path){
             }
          },
     }).fail(function(res, textStatus, errorThrown){
-        // window.location.href = "/login.html#"+errorThrown;
+        if (res.readyState == 0){
+            logout("There's a network error");
+        }
     });
 }
 
 function hash_changed(){
     var hash = location.hash.replace( /^#/, '' );
     get_secret(hash);
+    reset_timer();
 }
 
 $(document).ready(function(){
@@ -418,6 +441,11 @@ $(document).ready(function(){
     $("#print_secret_btn").click(function(){
         print_secret($("#editormd").html());
     });
+
+    $("#options-modal").on('show.bs.modal', function (e) {
+        $("#input_vault_url").val(localStorage.getItem("ironvault_url") || VAULT_URL);
+        $("#input_logout_timer").val(localStorage.getItem("ironvault_logout_timer")/60/1000 || DEFAULT_TIMER/60/1000);
+    })
 
     window.addEventListener("hashchange", hash_changed, false);
 
