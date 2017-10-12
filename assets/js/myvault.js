@@ -2,6 +2,7 @@
 // TOOD: this should be made in better way :-)
 var VAULT_URL = "http://127.0.0.1:8200/v1/";
 var DEFAULT_SECRET_PATH = "/secret/";
+var BACKUP_SECRET_PATH  = "/backup/";
 var EFFECT_TIME= 200;
 var DEFAULT_TIMER = 15*60*1000; //minutes*secs*milliseconds
 var path_array = [];
@@ -13,12 +14,14 @@ function save_options(){
     if ($("#input_vault_url").val() != ""){
         VAULT_URL = $("#input_vault_url").val();
         localStorage.setItem("ironvault_url", VAULT_URL);
-
     }
     if ($("#input_vault_path").val() != ""){
         DEFAULT_SECRET_PATH = $("#input_vault_path").val();
         localStorage.setItem("ironvault_path", DEFAULT_SECRET_PATH);
-
+    }
+    if ($("#input_vault_path").val() != ""){
+        BACKUP_SECRET_PATH = $("#input_backup_path").val();
+        localStorage.setItem("ironvault_backup_path", BACKUP_SECRET_PATH);
     }
     localStorage.setItem("ironvault_logout_timer",$("#input_logout_timer").val()*60*1000);
     $("#options-modal").modal("hide");
@@ -116,6 +119,7 @@ function is_logged(){
 
             VAULT_URL = localStorage.getItem("ironvault_url") || VAULT_URL;
             DEFAULT_SECRET_PATH = localStorage.getItem("ironvault_path") || DEFAULT_SECRET_PATH;
+            BACKUP_SECRET_PATH  = localStorage.getItem("ironvault_backup_path") || BACKUP_SECRET_PATH;
             var path = get_path();
             reset_timer();
             if (path.length > 0) {
@@ -479,6 +483,7 @@ $(document).ready(function(){
     $("#options-modal").on('show.bs.modal', function (e) {
         $("#input_vault_url").val(localStorage.getItem("ironvault_url") || VAULT_URL);
         $("#input_vault_path").val(localStorage.getItem("ironvault_path") || DEFAULT_SECRET_PATH);
+        $("#input_backup_path").val(localStorage.getItem("ironvault_backup_path") || BACKUP_SECRET_PATH);
         $("#input_logout_timer").val(localStorage.getItem("ironvault_logout_timer")/60/1000 || DEFAULT_TIMER/60/1000);
     })
 
