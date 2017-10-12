@@ -15,6 +15,11 @@ function save_options(){
         localStorage.setItem("ironvault_url", VAULT_URL);
 
     }
+    if ($("#input_vault_path").val() != ""){
+        DEFAULT_SECRET_PATH = $("#input_vault_path").val();
+        localStorage.setItem("ironvault_path", DEFAULT_SECRET_PATH);
+
+    }
     localStorage.setItem("ironvault_logout_timer",$("#input_logout_timer").val()*60*1000);
     $("#options-modal").modal("hide");
 }
@@ -56,7 +61,7 @@ function login(method){
         } else if (method == "token"){
             localStorage.setItem("ironvault_token", res.data.id);
         }
-        window.location.href = "/";
+        window.location.href = "index.html";
     }).fail(function(res, textStatus, errorThrown){
         if (res.readyState == 0){
             logout("There's a network error");
@@ -80,7 +85,7 @@ function get_path(){
 
 function logout(error){
     localStorage.removeItem('ironvault_token');
-    window.location.href = "/login.html#"+error;
+    window.location.href = "login.html#"+error;
 }
 
 function automatic_logout(){
@@ -99,17 +104,18 @@ function is_logged(){
     }
     var token = get_token();
     if (!token){
-        if (window.location.pathname != "/login.html"){
-            window.location.href = "/login.html";
+        if (/login.html$/.test(window.location.pathname) == false ){
+            window.location = "login.html";
         }
     } else {
-        if (window.location.pathname == "/login.html"){
-            window.location.href = "/";
+        if (/login.html$/.test(window.location.pathname)){
+            window.location = "index.html";
         } else {
             $("ul li a#is_logged").html("Logout");
-            $("ul li a#is_logged").attr("href", "/login.html?logout");
+            $("ul li a#is_logged").attr("href", "login.html?logout");
 
             VAULT_URL = localStorage.getItem("ironvault_url") || VAULT_URL;
+            DEFAULT_SECRET_PATH = localStorage.getItem("ironvault_path") || DEFAULT_SECRET_PATH;
             var path = get_path();
             reset_timer();
             if (path.length > 0) {
@@ -472,6 +478,7 @@ $(document).ready(function(){
 
     $("#options-modal").on('show.bs.modal', function (e) {
         $("#input_vault_url").val(localStorage.getItem("ironvault_url") || VAULT_URL);
+        $("#input_vault_path").val(localStorage.getItem("ironvault_path") || DEFAULT_SECRET_PATH);
         $("#input_logout_timer").val(localStorage.getItem("ironvault_logout_timer")/60/1000 || DEFAULT_TIMER/60/1000);
     })
 

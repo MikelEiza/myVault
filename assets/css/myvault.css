@@ -85,6 +85,10 @@ ol.breadcrumb {
 #tree_search {
     padding-bottom: 15px;
 }
+#tree {
+    margin-bottom: 60px;
+    padding-bottom: 60px;
+}
 
 nav#footer {
     height: 30px;
