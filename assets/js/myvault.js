@@ -251,6 +251,65 @@ function print_secret(data){
 
 }
 
+function delete_vault_secret(path){
+    var token = get_token();
+    return $.ajax({
+        type: "DELETE",
+        headers: {"X-Vault-Token": token},
+        url: VAULT_URL+path.substring(1)
+    });
+}
+
+function get_vault_secret(path){
+    var token = get_token();
+    return $.ajax({
+        type: "GET",
+        headers: {"X-Vault-Token": token},
+        url: VAULT_URL+path.substring(1),
+        contentType: "application/json",
+        dataType: "json",
+    });
+}
+
+function set_vault_secret(path,data){
+    var token = get_token();
+    var json_item = {};
+    json_item["ironvault"] = "markdown";
+    json_item["data"] = data;
+
+    return $.ajax({
+        type: "PUT",
+        headers: {"X-Vault-Token": token},
+        url: VAULT_URL+path.substring(1),
+        contentType: "application/json",
+        dataType: "json",
+        data: JSON.stringify(json_item)
+    });
+}
+
+function move_secret(path,new_path){
+    get_vault_secret(path).done(function(response, textStatus, jqXHR){
+        set_vault_secret(new_path,response.data["data"]).done(function(response, textStatus, jqXHR){
+            $("#move_modal").modal("hide");
+            $("#log_success").html("Secret has been moved to "+new_path).slideDown().delay(1500).slideUp();
+            delete_vault_secret(path);
+            window.location.href = "#!"+new_path;
+        });
+    });
+}
+
+function backup_secret(path){
+}
+
+function delete_secret(path){
+    delete_vault_secret(path).done(function(response, textStatus, jqXHR){
+        window.location.href = "#!"+DEFAULT_SECRET_PATH;
+        $("#log_error").html("Secret has been deleted").slideDown().delay(1500).slideUp();
+        $("#editors").hide();
+        $("#create_secret").show();
+    });
+}
+
 function set_secret(action,data,create){
     var token = get_token();
     var path = "";
@@ -263,34 +322,24 @@ function set_secret(action,data,create){
             path = params[0];
         }
     }
-    var item = {}
-    item["ironvault"] = "markdown";
-    item["data"] = data;
 
-    $.ajax({
-        type: "PUT",
-        headers: {"X-Vault-Token": token},
-        url: VAULT_URL+path,
-        contentType: "application/json",
-        dataType: "json",
-        data: JSON.stringify(item),
-        statusCode: {
-            204: function (response, textStatus, errorThrown) {
-                $("#log_success").html("Secret has been "+action).slideDown().delay(1500).slideUp();
-                if (create){
-                    window.location.href = "#!"+path+"&edit=1";
-                }
-            },
-            400: function (response, textStatus, errorThrown) {
-                $("#log_error").html("Secret has NOT been "+action+"<br/><br/>ERROR: "+errorThrown);
-                $("#log_error").slideDown().delay(2500).slideUp();
-            },
-            403: function (response, textStatus, errorThrown){
-                logout(textStatus+" "+errorThrown);
-            },
-        },
+    set_vault_secret(path,data).done(function(response, textStatus, jqXHR){
+        switch(jqXHR.status) {
+            case 204:
+                    $("#log_success").html("Secret has been "+action).slideDown().delay(1500).slideUp();
+                    if (create){
+                        window.location.href = "#!"+path+"&edit=1";
+                    }
+                break;
+            case 400:
+                    $("#log_error").html("Secret has NOT been "+action+"<br/><br/>ERROR: "+errorThrown);
+                    $("#log_error").slideDown().delay(2500).slideUp();
+                break;
+            case 403:
+                    logout(textStatus+" "+errorThrown);
+                break;
+        }; //switch
     });
-
 }
 
 function get_secret(){
@@ -311,109 +360,102 @@ function get_secret(){
     } else if (path.length > 0) {
         $("#editormd").empty().removeAttr('class').css('height', 'auto');
         $("#editormd").append('<textarea style="display:none">');
-        $.ajax({
-            type: "GET",
-            headers: {"X-Vault-Token": token},
-            url: VAULT_URL+path.substring(1),
-            contentType: "application/json",
-            dataType: "json",
-            timeout: 5000,
-            statusCode: {
-                200: function (response, textStatus, errorThrown) {
-                    $("#editors").slideDown(EFFECT_TIME);
-                    update_breadcrumb();
+        get_vault_secret(path).done(function(response, textStatus, jqXHR){
+            $("#editors").slideDown(EFFECT_TIME);
+            update_breadcrumb();
 
-                    $("#editormd textarea").text(response.data["data"]);
+            $("#editormd textarea").text(response.data["data"]);
 
-                    var editormarkdown = "";
-                    if (edit) {
-                        var editormarkdown = "";
-                        $("#functions_buttons").hide();
+            var editormarkdown = "";
+            if (edit) {
+                var editormarkdown = "";
+                $("#functions_buttons").hide();
 
-                        editormarkdown = editormd({
-                            id                 : "editormd",
-                            width              : "100%",
-                            path               : "deps/editor.md/lib/",
-                            // height             : 800,
-                            mode               : "gfm", // https://codemirror.net/mode/gfm/
-                            tocm               :true,
-                            codeFold           : true,
-                            // saveHTMLToTextarea : true,
-                            searchReplace      : true,
-                            autoCloseTags      : true,
-                            htmlDecode         : "style,script,iframe",
-                            emoji              : true,
-                            taskList           : true,
-                            tex                : true,
-                            flowChart          : true,
-                            sequenceDiagram    : true,
-                            toolbarAutoFixed   : false,
-                            toolbarIcons : function(){
-                                return ["undo", "redo", "|",
-                                    "bold", "del", "italic", "quote", "|",
-                                    "h1", "h2", "h3", "h4", "h5", "h6", "|",
-                                    "list-ul", "list-ol", "hr", "|",
-                                    "link", "reference-link", "image", "code",
-                                    "preformatted-text", "code-block",
-                                    "table", "emoji", "pagebreak", "|",
-                                    "watch", "preview", "search", "fullscreen"
-                                ]
-                            },
-                            onload : function() {
-                                // Awesome hack to add "save" option :D
-                                $("ul.editormd-menu")
-                                    .prepend(
-                                        '<li><a href="javascript:;" id="editor_update_secret_btn" title="Save" unselectable="on">\
-                                        <i class="fa fa-floppy-o" unselectable="on"></i></a></li>');
-                                $("#editor_update_secret_btn").click(function(){
-                                    set_secret("updated",editormarkdown.getMarkdown(),false);
-                                });
-
-                                $('.markdown-toc a').click(function(e) {
-                                    e.preventDefault();
-                                    var hash = this.hash;
-                                    var offset = $('#editormd').outerHeight();
-                                    var target = $("a[name='"+hash.substring(1)+"'].reference-link").offset().top ;
-                                    $('html, body, markdown-body').stop(true, true).animate({ scrollTop: target}, 500, function () {});
-                                    return false;
-                                });
-                            },
-
+                editormarkdown = editormd({
+                    id                 : "editormd",
+                    width              : "100%",
+                    path               : "deps/editor.md/lib/",
+                    // height             : 800,
+                    mode               : "gfm", // https://codemirror.net/mode/gfm/
+                    tocm               :true,
+                    codeFold           : true,
+                    // saveHTMLToTextarea : true,
+                    searchReplace      : true,
+                    autoCloseTags      : true,
+                    htmlDecode         : "style,script,iframe",
+                    emoji              : true,
+                    taskList           : true,
+                    tex                : true,
+                    flowChart          : true,
+                    sequenceDiagram    : true,
+                    toolbarAutoFixed   : false,
+                    toolbarIcons : function(){
+                        return ["undo", "redo", "|",
+                            "bold", "del", "italic", "quote", "|",
+                            "h1", "h2", "h3", "h4", "h5", "h6", "|",
+                            "list-ul", "list-ol", "hr", "|",
+                            "link", "reference-link", "image", "code",
+                            "preformatted-text", "code-block",
+                            "table", "emoji", "pagebreak", "|",
+                            "watch", "preview", "search", "fullscreen"
+                        ]
+                    },
+                    onload : function() {
+                        // Awesome hack to add "save" option :D
+                        $("ul.editormd-menu")
+                            .prepend(
+                                '<li><a href="javascript:;" id="editor_update_secret_btn" title="Save" unselectable="on">\
+                                <i class="fa fa-floppy-o" unselectable="on"></i></a></li>');
+                        $("#editor_update_secret_btn").click(function(){
+                            set_secret("updated",editormarkdown.getMarkdown(),false);
                         });
-                    } else {
-                        $("#functions_buttons").show();
-                        // just show the secret
-                        editormarkdown = editormd.markdownToHTML("editormd", {
-                            // height             : 800,
-                            mode               : "gfm", // https://codemirror.net/mode/gfm/
-                            tocm               : true,
-                            tocTitle           : "TOCM",
-                            htmlDecode         : "style,script,iframe",
-                            emoji              : true,
-                            taskList           : true,
-                            tex                : true,
-                            flowChart          : true,
-                            sequenceDiagram    : true,
-                        });
-                        $('div.markdown-toc a').click(function(e) {
+
+                        $('.markdown-toc a').click(function(e) {
                             e.preventDefault();
                             var hash = this.hash;
                             var offset = $('#editormd').outerHeight();
                             var target = $("a[name='"+hash.substring(1)+"'].reference-link").offset().top ;
-                            $('html, body').stop(true, true).animate({ scrollTop: target}, 500, function () {});
+                            $('html, body, markdown-body').stop(true, true).animate({ scrollTop: target}, 500, function () {});
                             return false;
                         });
-                    }
+                    },
 
-                },
-                403: function (response, textStatus, errorThrown){
-                    logout(textStatus+" "+errorThrown);
-                },
-                404: function(response, textStatus, errorThrown){
-                    $('#log_error').html("Secret not found").slideDown().delay(2500).slideUp();
-                    $("#editors").slideUp(EFFECT_TIME);
-                },
-            },
+                });
+            } else {
+                $("#functions_buttons").show();
+                // just show the secret
+                editormarkdown = editormd.markdownToHTML("editormd", {
+                    // height             : 800,
+                    mode               : "gfm", // https://codemirror.net/mode/gfm/
+                    tocm               : true,
+                    tocTitle           : "TOCM",
+                    htmlDecode         : "style,script,iframe",
+                    emoji              : true,
+                    taskList           : true,
+                    tex                : true,
+                    flowChart          : true,
+                    sequenceDiagram    : true,
+                });
+                $('div.markdown-toc a').click(function(e) {
+                    e.preventDefault();
+                    var hash = this.hash;
+                    var offset = $('#editormd').outerHeight();
+                    var target = $("a[name='"+hash.substring(1)+"'].reference-link").offset().top ;
+                    $('html, body').stop(true, true).animate({ scrollTop: target}, 500, function () {});
+                    return false;
+                });
+            }
+        }).fail(function(jqXHR, textStatus, errorThrown){
+            switch (jqXHR.status){
+                case 403:
+                        logout(textStatus+" "+errorThrown);
+                    break;
+                case 404:
+                        console.log("aqwe");
+                        $('#log_error').html("Secret not found").slideDown().delay(2500).slideUp();
+                        $("#editors").slideUp(EFFECT_TIME);
+                    break;
+            }
         });
     }
 }
@@ -462,10 +504,6 @@ $(document).ready(function(){
         login();
     });
 
-    $("#save_options").click(function(){
-        save_options();
-    });
-
     // index.html
     $("#create_secret_btn").click(function(){
         set_secret("created","",true);
@@ -479,13 +517,6 @@ $(document).ready(function(){
     $("#print_secret_btn").click(function(){
         print_secret($("#editormd").html());
     });
-
-    $("#options-modal").on('show.bs.modal', function (e) {
-        $("#input_vault_url").val(localStorage.getItem("ironvault_url") || VAULT_URL);
-        $("#input_vault_path").val(localStorage.getItem("ironvault_path") || DEFAULT_SECRET_PATH);
-        $("#input_backup_path").val(localStorage.getItem("ironvault_backup_path") || BACKUP_SECRET_PATH);
-        $("#input_logout_timer").val(localStorage.getItem("ironvault_logout_timer")/60/1000 || DEFAULT_TIMER/60/1000);
-    })
 
     window.addEventListener("hashchange", hash_changed, false);
 

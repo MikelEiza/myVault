@@ -1,0 +1,41 @@
+<!-- move Modal -->
+<div class="modal fade" id="move_modal" tabindex="-1" role="dialog" aria-labelledby="move_modal_label" aria-hidden="">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="moveModalLabel">Move secret</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+          <div class="form-group">
+            <label for="input_current_path">Current secret path</label>
+            <input type="input" id="input_current_path" class="form-control" readonly>
+          </div>
+
+          <div class="form-group">
+            <label for="input_new_path">New secret path</label>
+            <input type="input" id="input_new_path" class="form-control">
+          </div>
+      </div>
+      <div class="modal-footer">
+        <button id="modal_move_secret_btn" type="button" class="btn btn-primary">Move Secret</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- END Modal -->
+<script type="text/javascript">
+
+    $("#move_modal").on('show.bs.modal', function (e) {
+        $("#input_current_path").val(get_path());
+        $("#input_new_path").val(get_path());
+    });
+
+    $("#modal_move_secret_btn").click(function(){
+        var path = get_path();
+        new_path = $("#input_new_path").val();
+        move_secret(path,new_path);
+    });
+</script>

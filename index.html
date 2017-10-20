@@ -92,8 +92,10 @@
 
           <div id="editors" style="display:none">
               <div id="functions_buttons" class="float-right">
-                  <button id="print_secret_btn" type="button" class="btn btn-primary fa fa-print"></button>
-                  <button id="edit_secret_btn"  type="button" class="btn btn-success fa fa-edit"></button>
+                  <button id="edit_secret_btn"  type="button" class="btn btn-success fa fa-edit" data-toggle="tooltip" title="edit"></button>
+                  <button id="move_secret_btn" type="button" class="btn btn-info fa fa-reply" aria-hidden="true" data-toggle="modal" title="move" data-target="#move_modal"></button>
+                  <button id="print_secret_btn" type="button" class="btn btn-primary fa fa-print" data-toggle="tooltip" title="print"></button>
+                  <button id="delete_secret_btn"  type="button" class="btn btn-danger fa fa-remove" data-toggle="modal" title="delete" data-target="#delete_modal"></button>
               </div>
 
               <div id="editormd">
@@ -112,11 +114,15 @@
     </nav>
 
     <div id="modal"></div>
+    <div id="modal_move"></div>
+    <div id="modal_delete"></div>
 
     <script type="text/javascript">
         $("#modal").load("modal.html");
+        $("#modal_move").load("move_modal.html");
+        $("#modal_delete").load("delete_modal.html");
+        $('[data-toggle="tooltip"]').tooltip()
         is_logged();
     </script>
-
   </body>
 </html>
