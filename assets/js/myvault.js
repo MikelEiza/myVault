@@ -86,13 +86,24 @@ function get_path(){
     return hash;
 }
 
-function logout(error){
+function logout(error,redirect=true){
     localStorage.removeItem('ironvault_token');
-    window.location.href = "login.html#"+error;
+    if (redirect){
+        window.location.href = "login.html#"+error;
+    }
 }
 
 function automatic_logout(){
-    logout("Automatic logout");
+    var path = get_path();
+    var is_editing = false;
+    if (path.indexOf("&")>0){
+        var params= path.split("&")
+        path = params[0];
+        if (params[1].split("=")[0] == "edit"){
+            is_editting = true
+        }
+    }
+    logout("Automatic logout",!is_editing);
 }
 
 function reset_timer(){
