@@ -271,12 +271,15 @@ function get_vault_secret(path){
     });
 }
 
-function set_vault_secret(path,data){
+function set_vault_secret(path,data,backup=true){
     var token = get_token();
     var json_item = {};
     json_item["ironvault"] = "markdown";
     json_item["data"] = data;
 
+    if (backup){
+        backup_secret(path);
+    }
     return $.ajax({
         type: "PUT",
         headers: {"X-Vault-Token": token},
@@ -299,6 +302,10 @@ function move_secret(path,new_path){
 }
 
 function backup_secret(path){
+    var date = (new Date).getTime();
+    get_vault_secret(path).done(function(response, textStatus, jqXHR){
+        set_vault_secret(BACKUP_SECRET_PATH+path.substring(1)+"__"+date,response.data["data"],false);
+    });
 }
 
 function delete_secret(path){
