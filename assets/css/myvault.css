@@ -97,3 +97,11 @@ nav#footer {
 a.nav-link , #footer a .fa-heart {
     color: #b0232a;
 }
+
+body.modal-open #todo{
+    -webkit-filter: blur(7px);
+    -moz-filter: blur(15px);
+    -o-filter: blur(15px);
+    -ms-filter: blur(15px);
+    filter: blur(15px);
+}

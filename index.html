@@ -34,6 +34,7 @@
   </head>
 
   <body>
+  <div id="todo">
 
     <nav class="navbar navbar-expand-md navbar-dark bg-dark">
       <a class="navbar-brand" href="index.html">My Vault
@@ -54,7 +55,7 @@
             </a>
           </li>
           <li class="nav-item active">
-            <a id="is_logged" class="nav-link" href="login.html">Login</a>
+            <a id="logout" class="nav-link" href="#!">Logout</a>
           </li>
         </ul>
       </div>
@@ -113,16 +114,74 @@
           Made by Yuki</a>
     </nav>
 
-    <div id="modal"></div>
-    <div id="modal_move"></div>
-    <div id="modal_delete"></div>
+  </div>
+
+  <div id="modal"></div>
+  <div id="modal_move"></div>
+  <div id="modal_delete"></div>
+
+  <!-- login Modal -->
+    <div class="modal fade" id="login_modal" tabindex="-1" role="dialog" aria-labelledby="login_modal_label" aria-hidden="" data-keyboard="false" data-backdrop="static">
+        <div class="modal-dialog modal-sm" role="document">
+          <div class="modal-content">
+            <div class="modal-body">
+
+                <h2 class="form-signin-heading text-center">My Vault <i id="lock-icon" class="fa fa-lock" aria-hidden="true"></i></h2>
+
+                <h6 class="form-signin-heading text-center">Log in</h6>
+
+                <div id="login_error" class="alert alert-danger" role="alert" style="display:none"></div>
+
+
+                <ul class="nav nav-tabs justify-content-center" id="loginTab" role="tablist">
+                  <li class="nav-item">
+                    <a class="nav-link active" id="ldap-tab" data-toggle="tab" href="#ldap-tab-content" role="tab" aria-controls="ldap" aria-expanded="true">LDAP</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" id="token-tab" data-toggle="tab" href="#token-tab-content" role="tab" aria-controls="token">Token</a>
+                  </li>
+                </ul>
+                <div class="tab-content" id="login-tab-content">
+
+                      <div class="tab-pane fade show active" id="ldap-tab-content" role="tabpanel" aria-labelledby="ldap-tab">
+                          <form id="login_form" action='javascript:login("ldap");' autocomplete="off">
+                              <div class="form-group">
+                                <label for="username" class="sr-only">username</label>
+                                <input type="input" id="username" class="form-control" placeholder="Username" required autofocus>
+                              </div>
+                              <div class="form-group">
+                                <label for="inputPassword" class="sr-only">Password</label>
+                                <input type="password" id="password" class="form-control" placeholder="Password" required>
+                              </div>
+
+                              <button id="login" class="btn btn-lg btn-primary btn-block">Log in</button>
+                          </form>
+                      </div>
+
+                      <div class="tab-pane fade" id="token-tab-content" role="tabpanel" aria-labelledby="token-tab">
+                          <form id="login_form" action='javascript:login("token");' autocomplete="off">
+                              <div class="form-group">
+                                <label for="token" class="sr-only">token</label>
+                                <input type="input" id="token" class="form-control" placeholder="token" required autofocus>
+                              </div>
+                              <button id="login" class="btn btn-lg btn-primary btn-block">Log in</button>
+                          </form>
+                      </div>
+
+                </div>
+
+          </div>
+        </div>
+    </div>
+  <!-- END Modal -->
+
+
 
     <script type="text/javascript">
         $("#modal").load("modal.html");
         $("#modal_move").load("move_modal.html");
         $("#modal_delete").load("delete_modal.html");
         $('[data-toggle="tooltip"]').tooltip()
-        is_logged();
     </script>
   </body>
 </html>

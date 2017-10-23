@@ -54,8 +54,8 @@ function login(method){
         dataType: "json",
         statusCode: {
             400: function (response, textStatus, errorThrown) {
-                $("#log_error").html(response.responseJSON.errors);
-                $("#log_error").slideDown().delay(3500).slideUp();
+                $("#login_error").html(response.responseJSON.errors).slideDown().delay(3500).slideUp();
+                // $("#login_error")
             }
         },
     }).done(function(res) {
@@ -64,7 +64,8 @@ function login(method){
         } else if (method == "token"){
             localStorage.setItem("ironvault_token", res.data.id);
         }
-        window.location.href = "index.html";
+        $("#login_modal").modal("hide");
+        is_logged();
     }).fail(function(res, textStatus, errorThrown){
         if (res.readyState == 0){
             logout("There's a network error");
@@ -86,24 +87,19 @@ function get_path(){
     return hash;
 }
 
-function logout(error,redirect=true){
-    localStorage.removeItem('ironvault_token');
-    if (redirect){
-        window.location.href = "login.html#"+error;
+function logout(error){
+    if (localStorage.getItem("ironvault_token")){
+        localStorage.removeItem('ironvault_token');
+        $("#login_modal").modal("show");
+        $("#username").val("");
+        $("#password").val("");
+        $("#token").val("");
+        $("#login_error").html(error).slideDown().delay(1500).slideUp();
     }
 }
 
 function automatic_logout(){
-    var path = get_path();
-    var is_editing = false;
-    if (path.indexOf("&")>0){
-        var params= path.split("&")
-        path = params[0];
-        if (params[1].split("=")[0] == "edit"){
-            is_editting = true
-        }
-    }
-    logout("Automatic logout",!is_editing);
+    logout("Automatic logout");
 }
 
 function reset_timer(){
@@ -118,32 +114,25 @@ function is_logged(){
     }
     var token = get_token();
     if (!token){
-        if (/login.html$/.test(window.location.pathname) == false ){
-            window.location = "login.html";
-        }
+        $("#login_modal").modal("show");
     } else {
-        if (/login.html$/.test(window.location.pathname)){
-            window.location = "index.html";
-        } else {
-            $("ul li a#is_logged").html("Logout");
-            $("ul li a#is_logged").attr("href", "login.html?logout");
 
-            VAULT_URL = localStorage.getItem("ironvault_url") || VAULT_URL;
-            DEFAULT_SECRET_PATH = localStorage.getItem("ironvault_path") || DEFAULT_SECRET_PATH;
-            BACKUP_SECRET_PATH  = localStorage.getItem("ironvault_backup_path") || BACKUP_SECRET_PATH;
-            var path = get_path();
-            reset_timer();
-            if (path.length > 0) {
-                if (path.substring(path.length-1) == "/"){
-                    // we're in a directory
-                    browse_secrets(path);
-                } else {
-                    get_secret();
-                }
+        VAULT_URL = localStorage.getItem("ironvault_url") || VAULT_URL;
+        DEFAULT_SECRET_PATH = localStorage.getItem("ironvault_path") || DEFAULT_SECRET_PATH;
+        BACKUP_SECRET_PATH  = localStorage.getItem("ironvault_backup_path") || BACKUP_SECRET_PATH;
+        var path = get_path();
+        reset_timer();
+        if (path.length > 0) {
+            if (path.substring(path.length-1) == "/"){
+                // we're in a directory
+                browse_secrets(path);
             } else {
-                browse_secrets(DEFAULT_SECRET_PATH);
+                get_secret();
             }
+        } else {
+            browse_secrets(DEFAULT_SECRET_PATH);
         }
+
         var data = get_tree(DEFAULT_SECRET_PATH);
 
         $(document).ready(function($) {
@@ -469,7 +458,6 @@ function get_secret(){
                         logout(textStatus+" "+errorThrown);
                     break;
                 case 404:
-                        console.log("aqwe");
                         $('#log_error').html("Secret not found").slideDown().delay(2500).slideUp();
                         $("#editors").slideUp(EFFECT_TIME);
                     break;
@@ -522,6 +510,10 @@ $(document).ready(function(){
         login();
     });
 
+    $("#logout").click(function(){
+        logout("You have been logout");
+    });
+
     // index.html
     $("#create_secret_btn").click(function(){
         set_secret("created","",true);
@@ -537,5 +529,7 @@ $(document).ready(function(){
     });
 
     window.addEventListener("hashchange", hash_changed, false);
+
+    is_logged();
 
 });
