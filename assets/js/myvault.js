@@ -133,37 +133,41 @@ function is_logged(){
             browse_secrets(DEFAULT_SECRET_PATH);
         }
 
-        var data = get_tree(DEFAULT_SECRET_PATH);
+        var data = get_tree(DEFAULT_SECRET_PATH,true);
 
-        $(document).ready(function($) {
-            setTimeout(function() {
-                var keys_tree = $("#tree").delay(1000).treeview({
-                   data:data,
-                   levels:1,
-                   color: "#2e2d30",
-                   selectedBackColor: "#b0232a",
-                   enableLinks:true,
-                   expandIcon: "fa fa-plus",
-                   collapseIcon: "fa fa-minus",
-                   onNodeSelected: function(event, node) {
-                       var node = $('#tree').treeview("getSelected")[0];
-                       window.location.href = node.href;
-                       $('#tree').treeview('expandNode', node.nodeId);
-                      }
-                });
+        // $(document).ready(function($) {
+        //     setTimeout(function() {
+        data[0].done(function(){
+            var keys_tree = $("#tree").delay(1000).treeview({
+               data:data[1],
+               levels:1,
+               color: "#2e2d30",
+               selectedBackColor: "#b0232a",
+               enableLinks:true,
+               expandIcon: "fa fa-plus",
+               collapseIcon: "fa fa-minus",
+               onNodeSelected: function(event, node) {
+                   var node = $('#tree').treeview("getSelected")[0];
+                   window.location.href = node.href;
+                   $('#tree').treeview('expandNode', node.nodeId);
+                  }
+            });
 
-                // search tree
-                var findExpandibleNodess = function() {
-                    return keys_tree.treeview('search', [ $('#input_search_tree').val(), { ignoreCase: true, exactMatch: false } ]);
-                };
-                var expandibleNodes = findExpandibleNodess();
-                // Expand/collapse/toggle nodes
-                $('#input_search_tree').on('keyup', function (e) {
-                    expandibleNodes = findExpandibleNodess();
-                    $('.expand-node').prop('disabled', !(expandibleNodes.length >= 1));
-                });
-            }, 1000);
+            // search tree
+            var findExpandibleNodess = function() {
+                return keys_tree.treeview('search', [ $('#input_search_tree').val(), { ignoreCase: true, exactMatch: false } ]);
+            };
+            var expandibleNodes = findExpandibleNodess();
+            // Expand/collapse/toggle nodes
+            $('#input_search_tree').on('keyup', function (e) {
+                expandibleNodes = findExpandibleNodess();
+                $('.expand-node').prop('disabled', !(expandibleNodes.length >= 1));
+            });
+            console.log("FINE");
         });
+
+        //     }, 1000);
+        // });
 
     }
 }
@@ -176,36 +180,75 @@ function print_errors(){
     $('#log_error').html(errors);
 }
 
-function get_tree(path){
+function get_tree(path,first_time){
     var token = get_token();
     var items = []
+    var external = $.Deferred();
+
     $.ajax({
         type: "LIST",
-        async: true,
-        crossDomain: true,
         headers: {"X-Vault-Token": token},
         url: VAULT_URL+path.substring(1),
         contentType: "application/json",
-        dataType: "json",
-        statusCode: {
-            200: function (response, textStatus, errorThrown) {
-            },
-         },
+        dataType: "json"
     }).always(function(response){
-        $.each(response.data.keys.sort(),function(index,value){
-            item = {};
-            item["text"] = value;
-            item["href"] = "#!"+path+value;
+        var promises = [];
 
-            if (value.substring(value.length-1) == "/"){
-                item["nodes"] = [];
-                var sub_items = get_tree(path+value);
-                item["nodes"] = sub_items;
+        $.each(response.data.keys.sort(),function(index,value){
+            var dfd = $.Deferred();
+            if (index > 0){
+                promises[index-1].done(function(){
+                    item = {};
+                    item["text"] = value;
+                    item["href"] = "#!"+path+value;
+
+                    if (value.substring(value.length-1) == "/"){
+                        item["nodes"] = [];
+                        var result = get_tree(path+value,false);
+                        result[0].done(function(){
+                            item["nodes"] = result[1];
+                            // if (response.data.keys.length === index+1){
+                                dfd.resolve();
+                            // }
+
+                        })
+                    } else {
+                        // if (response.data.keys.length === index+1){
+                            dfd.resolve();
+                        // }
+
+                    }
+                    items.push(item);
+                })
+                promises.push(dfd);
+            } else {
+                item = {};
+                item["text"] = value;
+                item["href"] = "#!"+path+value;
+
+                if (value.substring(value.length-1) == "/"){
+                    item["nodes"] = [];
+                    var result = get_tree(path+value,false);
+                    result[0].done(function(){
+                        item["nodes"] = result[1];
+                        items.push(item);
+                        dfd.resolve();
+                    })
+                } else {
+                    items.push(item);
+                    dfd.resolve();
+                }
+                // debugger;
+                promises.push(dfd);
             }
-            items.push(item);
         })
+        $.when.apply(null, promises).then(function() {
+            console.log(path);
+            external.resolve()
+        });
     });
-    return items
+
+    return [external,items];
 }
 
 function update_breadcrumb() {
